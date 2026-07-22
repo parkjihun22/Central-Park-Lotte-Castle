@@ -1,4 +1,4 @@
-const SITE_URL = "https://geomoho-hobansummit.com";
+const SITE_URL = "https://www.lotte-castl.co.kr/";
 
 export const siteSeo = {
   siteName: "중앙공원 롯데캐슬",
