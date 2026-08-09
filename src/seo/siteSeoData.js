@@ -1,4 +1,4 @@
-const SITE_URL = "https://www.lotte-castl.co.kr/";
+const SITE_URL = "https://www.lotte-castl.co.kr";
 
 export const siteSeo = {
   siteName: "중앙공원 롯데캐슬",
@@ -19,6 +19,9 @@ export const siteSeo = {
     addressLocality: "서구",
     streetAddress:
       "화정동 457-20번지·금호동 80번지·풍암동 569번지 일원",
+    block: "1BL·2-1BL·2-2BL",
+    households: "2,772세대",
+    scale: "지하 2~3층 ~ 지상 28층, 39개동, 총 2,772세대",
 
     brands: [
       "중앙공원 롯데캐슬",
@@ -43,6 +46,9 @@ export const siteSeo = {
     "중앙공원 롯데캐슬 평면도",
     "중앙공원 롯데캐슬 모델하우스",
     "중앙공원 롯데캐슬 견본주택",
+    "중앙공원 롯데캐슬 언론보도",
+    "중앙공원 롯데캐슬 보도자료",
+    "중앙공원 롯데캐슬 뉴스",
     "롯데캐슬 시그니처",
   ],
 };
@@ -120,8 +126,12 @@ export const seoNavigation = [
   },
   {
     name: "홍보센터",
-    path: "/Promotion/Customer",
+    path: "/Promotion/Press",
     children: [
+      {
+        name: "언론보도",
+        path: "/Promotion/Press",
+      },
       {
         name: "관심고객등록",
         path: "/Promotion/Customer",
@@ -263,6 +273,17 @@ export const seoPages = {
     changefreq: "daily",
   }),
 
+  press: page({
+    path: "/Promotion/Press",
+    title: "언론보도 | 중앙공원 롯데캐슬",
+    description:
+      "중앙공원 롯데캐슬 언론보도 페이지입니다. 광주 중앙공원 1지구 1BL·2-1BL·2-2BL 공급 정보, 입지환경, 블록별 평면도, 모델하우스 방문예약 관련 공식 보도자료와 분양 소식을 확인하세요.",
+    menu: "홍보센터",
+    image: "/img/og/main.jpg",
+    priority: 0.9,
+    changefreq: "daily",
+  }),
+
   notFound: page({
     path: "/404",
     title: "페이지를 찾을 수 없습니다 | 중앙공원 롯데캐슬",
@@ -275,9 +296,28 @@ export const seoPages = {
   }),
 };
 
+const normalizeSeoPath = (pathname = "/") => {
+  let cleanPath = pathname || "/";
+
+  try {
+    if (/^https?:\/\//.test(cleanPath)) {
+      cleanPath = new URL(cleanPath).pathname;
+    }
+  } catch {
+    cleanPath = "/";
+  }
+
+  cleanPath = decodeURI(cleanPath)
+    .split("?")[0]
+    .split("#")[0]
+    .replace(/\/$/, "");
+
+  return cleanPath.toLowerCase() || "/";
+};
+
 export const seoPathMap = Object.fromEntries(
   Object.entries(seoPages).map(([key, value]) => [
-    value.path.toLowerCase(),
+    normalizeSeoPath(value.path),
     key,
   ])
 );
@@ -367,12 +407,15 @@ const getComplexBlockSeo = (normalizedPath, decodedPath) => {
 export const getAbsoluteUrl = (path = "/") => {
   if (/^https?:\/\//.test(path)) return path;
 
-  return `${siteSeo.siteUrl}${path}`;
+  const baseUrl = siteSeo.siteUrl.replace(/\/$/, "");
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+
+  return `${baseUrl}${normalizedPath}`;
 };
 
 export const getSeoPageByPath = (pathname = "/") => {
-  const decodedPath = decodeURI(pathname).replace(/\/$/, "") || "/";
-  const normalizedPath = decodedPath.toLowerCase();
+  const decodedPath = decodeURI(pathname).split("?")[0].split("#")[0];
+  const normalizedPath = normalizeSeoPath(decodedPath);
   const exactKey = seoPathMap[normalizedPath];
 
   if (exactKey) return seoPages[exactKey];
@@ -384,9 +427,10 @@ export const getSeoPageByPath = (pathname = "/") => {
 
   if (complexBlockPage) return complexBlockPage;
 
-  if (normalizedPath.endsWith("/customer")) {
-    return seoPages.customer;
-  }
+  if (normalizedPath.endsWith("/press")) return seoPages.press;
+  if (normalizedPath.includes("/promotion/press")) return seoPages.press;
+  if (normalizedPath.endsWith("/customer")) return seoPages.customer;
+  if (normalizedPath.includes("/promotion/customer")) return seoPages.customer;
 
   return seoPages.notFound;
 };

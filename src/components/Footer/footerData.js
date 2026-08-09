@@ -35,7 +35,7 @@ const footerData = {
     },
     {
       label: "홍보센터",
-      url: "/Promotion/press",
+      url: "/Promotion/Press",
     },
   ],
 

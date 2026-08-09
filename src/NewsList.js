@@ -1,47 +1,12 @@
+import { pressArticles } from "./pages/Promotion/pressArticles";
 
-import news2Img from "./assets/news/news2.jpg";
-import news3Img from "./assets/news/news3.jpg";
-import news4Img from "./assets/news/news4.jpg";
-
-
-const NewsList = [
-  {
-    id: 1,
-    title: "호반 써밋 거모지구, 청주 분양 정보 관심",
-    excerpt:
-      "호반 써밋 거모지구가 청주시 상당구 지북동 247번지 일원에 계획된 총 949세대 브랜드 주거 현장으로 관심을 받고 있다. 사업명은 청주 지북동 동남지역주택조합 공동주택 신축 계획이며, 아파트 11개동, 지하 3층~지상 29층 규모로 안내된다. 홈페이지에서는 사업개요, 입주자 모집공고, 청약 일정, 분양가 상담, 견본주택과 모델하우스 방문예약 정보를 순차적으로 확인할 수 있다.",
-    date: "2026. 6. 16.",
-    link: "/Promotion/Press/GdBF571AWRPe1I9lnqdv",
-  },
-  {
-    id: 2,
-    title: "중앙공원 롯데캐슬, 모델하우스 방문예약 안내",
-    image: news2Img,
-    excerpt:
-      "중앙공원 롯데캐슬 공식 홈페이지에서는 모델하우스 방문예약과 관심고객등록을 통해 분양 상담을 신청할 수 있다. 방문 상담에서는 호반 써밋 거모지구의 59㎡A·59㎡B·75㎡A·75㎡B·84㎡A·84㎡B 타입, 공급정보, 청약 절차, 계약 관련 유의사항 등 실제 의사결정에 필요한 내용을 확인할 수 있다. 대표번호 상담을 통해 방문 가능 시간과 준비 사항을 안내받을 수 있다.",
-    date: "2026. 6. 16.",
-    link: "/Promotion/Press/HOT4oruwp7FlUkFBt33K",
-  },
-  {
-    id: 3,
-    title: "청주 생활권에서 만나는 한양립스 더 벨루체",
-    image: news3Img,
-    excerpt:
-      "호반 써밋 거모지구는 청주시 상당구 지북동 생활권의 교통, 교육, 상업, 생활 편의시설을 종합적으로 살펴보는 수요자에게 맞춘 분양 정보를 제공한다. 홈페이지 입지환경 페이지에서는 생활 인프라와 주거환경을 확인할 수 있으며, 단지안내와 타입안내 페이지에서는 단지 구성과 타입별 공간을 살펴볼 수 있다. 한양건설이 시공하는 브랜드 아파트로, 청약, 공급정보, 분양가 상담, 견본주택 방문예약까지 연결되는 분양 안내 흐름을 갖췄다.",
-    date: "2026. 6. 16.",
-    link: "/Promotion/Press/dpYan9MCm19fgHlPL0rt",
-  },
-  {
-    id: 4,
-    title: "중앙공원 롯데캐슬, 청약·공급정보 한눈에 확인",
-    image: news4Img,
-    excerpt:
-      "중앙공원 롯데캐슬 공식 홈페이지는 입주자 모집공고, 공급안내, 계약서류안내, 분양일정 등 분양 전 확인해야 할 핵심 정보를 메뉴별로 제공한다. 호반 써밋 거모지구에 관심 있는 고객은 관심고객등록을 통해 상담 연락을 받을 수 있으며, 모델하우스 방문예약을 통해 949세대 공급 계획, 타입별 평면과 계약 조건을 자세히 확인할 수 있다. 공급 조건, 분양가, 청약 일정은 최종 공고와 상담 안내를 기준으로 확인하는 것이 중요하다.",
-    date: "2026. 6. 16.",
-    link: "/Promotion/Press/1D7kYBXQ5Mx1fmOyfrBX",
-  },
-];
-
-
+const NewsList = pressArticles.map((article) => ({
+  id: article.id,
+  title: article.title,
+  excerpt: article.summary,
+  date: article.date,
+  link: `/Promotion/Press/${article.slug || article.id}`,
+  image: article.image,
+}));
 
 export default NewsList;
