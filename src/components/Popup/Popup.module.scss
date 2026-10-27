@@ -1,106 +1,217 @@
 .container {
-    display: flex;
-    flex-direction: row;
-    justify-content: left;
-    align-items: center;
-
     position: fixed;
-    top: 10vw;
-    left: 0vw;
-
-    height: 28vw;
-    z-index: 1000;
-}
-
-.openPopupBtn {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-
-    width: 3vw;
-    height: 28vw;
-
-    background-color: #01496f;
-    border-top-right-radius: 1vw;
-    border-bottom-right-radius: 1vw;
-    cursor: pointer;
-
-    .btnIcon {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        border-bottom: 1px solid #ffffff;
-        width: 100%;
-        height: 3vw;
+    inset: 0;
+  
+    // 헤더 위에 팝업을 표시합니다.
+    z-index: 100000;
+  
+    // 팝업 바깥 영역은 기존 홈페이지를 클릭할 수 있습니다.
+    pointer-events: none;
+  
+    font-family: "SUIT-Regular", sans-serif;
+  
+    &,
+    * {
+      box-sizing: border-box;
     }
-
-    .btnText {
-        margin-bottom: 1vw;
-        font-family: 'SUIT-Regular';
-        font-weight: 500;
-        font-size: 0.9vw;
-        color: #ffffff;
-        writing-mode: vertical-rl;
-        text-orientation: upright;
-        text-align: center;
-    }
-}
-
-.popupBox {
-    display: flex;
-    flex-direction: column;
-    height: 28vw;
-}
-
-.imgContainer {
-    display: flex;
-    flex-direction: row;
-    background-color: #00000076;
-    height: calc(100% - 2.2vw);
-}
-
-.imageBox {
-    position: relative;
-    height: 100%;
-}
-
-.popupImg {
-    height: 100%;
-    width: auto;
-    display: block;
-    border-right: 1px solid #ffffff;
-}
-
-.visitReservationBtn {
+  }
+  
+  .popupBox {
     position: absolute;
-    left: 12%;
-    bottom: 6%;
-    width: 76%;
-    height: 9%;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    z-index: 3;
-}
-
-.btnContainer {
+  
+    // PC 팝업 위치: 왼쪽 여백 / 세로 중앙
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+  
     display: flex;
+    flex-direction: column;
+  
+    // 이미지 비율 2:3에 맞춰 화면 높이와 함께 폭도 줄어듭니다.
+    // 460px은 PC 팝업의 최대 폭입니다.
+    width: min(
+      460px,
+      calc((100vh - 140px) * 0.666667),
+      calc(100vw - 40px)
+    );
+  
+    width: min(
+      460px,
+      calc((100dvh - 140px) * 0.666667),
+      calc(100vw - 40px)
+    );
+  
+    overflow: hidden;
+  
+    border-radius: 10px;
+    background: #4a1022;
+  
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+  
+    pointer-events: auto;
+  }
+  
+  .imgContainer {
     width: 100%;
-    height: 2.2vw;
-    background-color: #222;
-
-    button {
-        flex: 1;
-        border: none;
-        background-color: #222;
-        color: #fff;
-        font-size: 0.8vw;
-        cursor: pointer;
-        font-family: 'SUIT-Regular';
-
-        &:last-child {
-            background-color: #111;
-        }
+  
+    // 이미지 내부 스크롤을 없애고 전체 이미지를 표시합니다.
+    overflow: hidden;
+  
+    background: #4a1022;
+    line-height: 0;
+  }
+  
+  .popupImg {
+    display: block;
+  
+    width: 100%;
+    height: auto;
+  
+    max-height: calc(100vh - 140px);
+    max-height: calc(100dvh - 140px);
+  
+    // 이미지가 잘리지 않도록 전체 비율을 유지합니다.
+    object-fit: contain;
+    object-position: center;
+  }
+  
+  .visitReservationBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  
+    flex-shrink: 0;
+  
+    width: 100%;
+    height: 48px;
+  
+    padding: 0 12px;
+  
+    border: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+  
+    background: #d8bd8a;
+    color: #3a1020;
+  
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  
+    cursor: pointer;
+  
+    transition: background-color 0.2s ease;
+  
+    &:hover {
+      background: #e5cc9c;
     }
-}
+  }
+  
+  .btnContainer {
+    display: flex;
+    flex-shrink: 0;
+  
+    width: 100%;
+    height: 42px;
+  
+    background: #222;
+  
+    button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+  
+      flex: 1;
+      min-width: 0;
+  
+      padding: 0 8px;
+  
+      border: 0;
+      border-radius: 0;
+  
+      background: #222;
+      color: #fff;
+  
+      font: inherit;
+      font-size: 12px;
+      font-weight: 400;
+  
+      cursor: pointer;
+  
+      &:last-child {
+        background: #151515;
+        border-left: 1px solid rgba(255, 255, 255, 0.1);
+      }
+  
+      &:hover {
+        background: #333;
+      }
+    }
+  }
+  
+  .closeIcon {
+    font-size: 20px;
+    line-height: 1;
+  }
+  
+  // 팝업을 닫았을 때만 보이는 다시 열기 버튼
+.openPopupBtn {
+    position: absolute;
+  
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+  
+    // 버튼 가로 폭 / 세로 길이
+    width: 68px;
+    height: 280px;
+    max-height: calc(100dvh - 40px);
+  
+    padding: 24px 0;
+  
+    border: 1px solid rgba(216, 189, 138, 0.6);
+    border-left: 0;
+    border-radius: 0 12px 12px 0;
+  
+    background: #4a1022;
+    color: #f4e5c6;
+  
+    box-shadow: 4px 6px 20px rgba(0, 0, 0, 0.25);
+  
+    pointer-events: auto;
+    cursor: pointer;
+  
+    transition: background-color 0.2s ease;
+  
+    // 화살표 크기
+    svg {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+  
+    span {
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+  
+      font-family: "SUIT-Regular", sans-serif;
+  
+      // 글자 크기 / 글자 간격
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: 7px;
+      line-height: 1;
+    }
+  
+    &:hover {
+      background: #60172e;
+    }
+  }

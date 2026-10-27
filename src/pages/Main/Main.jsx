@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useMediaQuery } from "react-responsive";
 import { Link } from "react-router-dom";
 
@@ -16,22 +16,47 @@ import MobileOverviewSection from "../../components/MobileOverviewSection/Mobile
 import Community from "../../components/Community/Community";
 import InterestPopup from "../../components/InterestPopup/InterestPopup";
 import UnitInfoSection from "../../components/UnitInfoSection/UnitInfoSection";
-import FAQSection from "../../components/FAQSection/FAQSection"
+import FAQSection from "../../components/FAQSection/FAQSection";
 import ReservationSection from "../../components/ReservationSection/ReservationSection";
+
+// 조건변경 홍보 팝업
+import Popup from "../../components/Popup/Popup";
+import MobilePopup from "../../components/MobilePopup/MobilePopup";
+import popupImage from "../../assets/Popup/condition-benefits-20261027.jpg";
 
 import mainImage from "../../assets/Main/Main1.jpg";
 import mobileImageMain from "../../assets/Main/mobileMain1.jpg";
 
-
-
 const Main = () => {
-
-
   const [isScroll, setIsScroll] = useState(false);
   const [page, setPage] = useState(1);
   const [isScrolling, setIsScrolling] = useState(false);
   const [isInterestPopupOpen, setIsInterestPopupOpen] = useState(false);
-  const isMobile = useMediaQuery({ query: "(max-width: 900px)" });
+
+  const [isMobilePopupOpen, setIsMobilePopupOpen] = useState(false);
+  const hasShownMobilePopup = useRef(false);
+
+  const isMobile = useMediaQuery({
+    query: "(max-width: 900px)",
+  });
+
+  // 모바일 홍보 팝업: 접속 3초 후 표시합니다.
+  useEffect(() => {
+    if (
+      !isMobile ||
+      isInterestPopupOpen ||
+      hasShownMobilePopup.current
+    ) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      hasShownMobilePopup.current = true;
+      setIsMobilePopupOpen(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [isMobile, isInterestPopupOpen]);
 
   const [registration, setRegistration] = useState({
     name: "",
@@ -43,6 +68,7 @@ const Main = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
     setRegistration((prev) => ({
       ...prev,
       [name]: value,
@@ -56,10 +82,14 @@ const Main = () => {
     };
 
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
-  // 관심고객 팝업이 열렸을 때 배경 스크롤을 잠그고 키보드 포커스를 팝업 안에 유지합니다.
+  // 관심고객 팝업이 열렸을 때 배경 스크롤을 잠그고
+  // 키보드 포커스를 팝업 안에 유지합니다.
   useEffect(() => {
     if (isInterestPopupOpen) {
       const prevOverflow = document.body.style.overflow;
@@ -74,6 +104,7 @@ const Main = () => {
       const focusable = modal.querySelectorAll?.(
         'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
       );
+
       const first = focusable?.[0];
       const last = focusable?.[focusable.length - 1];
 
@@ -111,14 +142,27 @@ const Main = () => {
     if (isMobile) return;
 
     const handleWheel = (e) => {
-      const nativeScrollSection = e.target.closest?.("[data-native-scroll-section='true']");
-
-      const activeTag = document.activeElement?.tagName;
-      const isFormFocus = ["INPUT", "TEXTAREA", "SELECT", "BUTTON"].includes(
-        activeTag || ""
+      const nativeScrollSection = e.target.closest?.(
+        "[data-native-scroll-section='true']"
       );
 
-      if (nativeScrollSection || isFormFocus || isInterestPopupOpen) return;
+      const activeTag = document.activeElement?.tagName;
+
+      const isFormFocus = [
+        "INPUT",
+        "TEXTAREA",
+        "SELECT",
+        "BUTTON",
+      ].includes(activeTag || "");
+
+      // 홍보 팝업 내부에서는 이미지 스크롤을 허용합니다.
+      if (
+        nativeScrollSection ||
+        isFormFocus ||
+        isInterestPopupOpen
+      ) {
+        return;
+      }
 
       e.preventDefault();
 
@@ -139,9 +183,19 @@ const Main = () => {
       setTimeout(() => setIsScrolling(false), 500);
     };
 
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    return () => window.removeEventListener("wheel", handleWheel);
-  }, [page, isScrolling, isMobile, isInterestPopupOpen]);
+    window.addEventListener("wheel", handleWheel, {
+      passive: false,
+    });
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+    };
+  }, [
+    page,
+    isScrolling,
+    isMobile,
+    isInterestPopupOpen,
+  ]);
 
   // 현재 페이지 번호에 맞춰 PC 화면의 스크롤 위치를 이동합니다.
   useEffect(() => {
@@ -157,6 +211,27 @@ const Main = () => {
 
   return (
     <>
+      {/* PC 홍보 팝업 */}
+      {!isMobile && (
+        <Popup
+          suspended={isInterestPopupOpen}
+          openInterestPopup={() => setIsInterestPopupOpen(true)}
+        />
+      )}
+
+      {/* 모바일 홍보 팝업 */}
+      {isMobile &&
+        isMobilePopupOpen &&
+        !isInterestPopupOpen && (
+          <MobilePopup
+            onClosed={setIsMobilePopupOpen}
+            popupImage={popupImage}
+            numbering="_Mobile_20261027"
+            openInterestPopup={() =>
+              setIsInterestPopupOpen(true)
+            }
+          />
+        )}
 
       {!isMobile ? (
         // PC 메인 화면
@@ -164,64 +239,65 @@ const Main = () => {
           <Header isChanged={isScroll} />
 
           <div className={styles.imageContainer}>
-          <img
-            src={mainImage}
-            className={styles.mainImage}
-            alt="중앙공원 롯데캐슬 메인 조감도"
-          />
+            <img
+              src={mainImage}
+              className={styles.mainImage}
+              alt="중앙공원 롯데캐슬 메인 조감도"
+            />
 
-          <div className={styles.overlay}></div>
+            <div className={styles.overlay}></div>
 
-          <div className={styles.mainImageTextBox}>
-          <p className={styles.heroEyebrow}>
-            광주 중앙공원 1지구
-          </p>
+            <div className={styles.mainImageTextBox}>
+              <p className={styles.heroEyebrow}>
+                광주 중앙공원 1지구
+              </p>
 
-          <h1 className={styles.heroTitle}>
-            중앙공원 롯데캐슬
-          </h1>
+              <h1 className={styles.heroTitle}>
+                중앙공원 롯데캐슬
+              </h1>
 
-          <div className={styles.heroKeyword}>
-            1BL · 2-1BL · 2-2BL 총 2,772세대
-            <br />
-            전용 84㎡부터 233㎡까지
-            <br />
-            롯데건설 시공
-          </div>
+              <div className={styles.heroKeyword}>
+                1BL · 2-1BL · 2-2BL 총 2,772세대
+                <br />
+                전용 84㎡부터 233㎡까지
+                <br />
+                롯데건설 시공
+              </div>
 
-          <p className={styles.heroDesc}>
-            광주광역시 서구 화정동·금호동·풍암동 일원에서 만나는
-            <br />
-            중앙공원 롯데캐슬 시그니처 브랜드 프리미엄
-            <br />
-            블록별 분양가·잔여세대 상담부터 모델하우스 방문예약까지
-            <br />
-            한 번에 확인하세요
-          </p>
-            <button
-              type="button"
-              onClick={() => setIsInterestPopupOpen(true)}
-              className={styles.heroReserveBtn}
-              aria-label="방문예약 열기"
-            >
-              방문예약
-            </button>
+              <p className={styles.heroDesc}>
+                광주광역시 서구 화정동·금호동·풍암동 일원에서 만나는
+                <br />
+                중앙공원 롯데캐슬 시그니처 브랜드 프리미엄
+                <br />
+                블록별 분양가·잔여세대 상담부터 모델하우스 방문예약까지
+                <br />
+                한 번에 확인하세요
+              </p>
 
-            <div className={styles.heroScroll}>
-              <span>SCROLL</span>
-              <i></i>
+              <button
+                type="button"
+                onClick={() => setIsInterestPopupOpen(true)}
+                className={styles.heroReserveBtn}
+                aria-label="방문예약 열기"
+              >
+                방문예약
+              </button>
+
+              <div className={styles.heroScroll}>
+                <span>SCROLL</span>
+                <i></i>
+              </div>
             </div>
           </div>
+
+          <div className={styles.section}>
+            <QuickInfo />
           </div>
-          <div className={styles.section}>
-          <QuickInfo />
-            </div>
-
-
-
 
           <div className={styles.section}>
-            <Location onReserve={() => setIsInterestPopupOpen(true)} />
+            <Location
+              onReserve={() => setIsInterestPopupOpen(true)}
+            />
           </div>
 
           <div className={styles.section}>
@@ -239,7 +315,6 @@ const Main = () => {
             </div>
           </div> */}
 
-
           <FAQSection />
 
           <ReservationSection
@@ -250,6 +325,7 @@ const Main = () => {
           <div className={styles.section5}>
             <Footer />
           </div>
+
           {/* 관심고객 등록 팝업 - PC */}
           {isInterestPopupOpen && (
             <InterestPopup
@@ -261,10 +337,10 @@ const Main = () => {
         </>
       ) : (
         // 모바일 메인 화면
-          <div className={styles.mobileMain}>
-            <Header isChanged={isScroll} />
+        <div className={styles.mobileMain}>
+          <Header isChanged={isScroll} />
 
-            <div className={styles.imageContainer}>
+          <div className={styles.imageContainer}>
             <img
               src={mobileImageMain}
               className={styles.mainImage}
@@ -299,25 +375,32 @@ const Main = () => {
                 <br />
                 한 번에 확인하세요
               </p>
-            <button
-              type="button"
-              onClick={() => setIsInterestPopupOpen(true)}
-              className={styles.heroReserveBtn1}
-              aria-label="방문예약 열기"
-            >
-              방문예약
-            </button>
+
+              <button
+                type="button"
+                onClick={() => setIsInterestPopupOpen(true)}
+                className={styles.heroReserveBtn1}
+                aria-label="방문예약 열기"
+              >
+                방문예약
+              </button>
+            </div>
           </div>
-          </div>
+
           <MobileOverviewSection />
-          <Location onReserve={() => setIsInterestPopupOpen(true)} />
+
+          <Location
+            onReserve={() => setIsInterestPopupOpen(true)}
+          />
 
           <section className={styles.darkSection}>
             <Community />
           </section>
 
           <Premium />
+
           {/* <UnitInfoSection /> */}
+
           <FAQSection />
 
           <ReservationSection
@@ -329,6 +412,7 @@ const Main = () => {
             <Footer />
             <FixIcon />
           </div>
+
           {/* 관심고객 등록 팝업 - 모바일 */}
           {isInterestPopupOpen && (
             <InterestPopup

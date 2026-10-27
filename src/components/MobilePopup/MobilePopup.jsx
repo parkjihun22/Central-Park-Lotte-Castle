@@ -1,83 +1,203 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useCookies } from "react-cookie";
+
 import styles from "./MobilePopup.module.scss";
 
+const MobilePopup = ({
+  onClosed,
+  popupImage,
+  numbering,
+  openInterestPopup = () => {},
+}) => {
+  const cookieName = `Popup_Cookie${numbering}`;
 
-const MobilePopup = ({ onClosed, popupImage, numbering, openInterestPopup }) => {
-    const [type, setType] = useState(0);
+  const [cookies, setCookie] = useCookies([cookieName]);
+  const isPopupShown = Boolean(cookies[cookieName]);
 
-    const [cookies, setCookie] = useCookies();
-    const isPopupShown = cookies[`Popup_Cookie${numbering}`];
+  const contentRef = useRef(null);
 
-    useEffect(() => {
-        if (isPopupShown) {
-          onClosed(false);
-          return;
-        }
-      
-        if (type === 1) {
-          const expires = new Date();
-          expires.setDate(expires.getDate() + 1);
-      
-          setCookie(`Popup_Cookie${numbering}`, true, {
-            path: "/",
-            expires,
-          });
-      
-          onClosed(false);
-        }
-      
-        if (type === 2) {
-          onClosed(false);
-        }
-      }, [
-        type,
-        isPopupShown,
-        numbering,
-        onClosed,
-        setCookie,
-      ]);
+  useEffect(() => {
+    if (isPopupShown) {
+      onClosed(false);
+    }
+  }, [isPopupShown, onClosed]);
+
+  // 팝업 표시 중 배경 스크롤을 잠급니다.
+  useEffect(() => {
+    if (isPopupShown) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const previousFocus = document.activeElement;
+
+    document.body.style.overflow = "hidden";
+    contentRef.current?.focus();
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        onClosed(false);
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+
+      const nodes = contentRef.current?.querySelectorAll(
+        'button:not([disabled]), [tabindex="0"]'
+      );
+
+      if (!nodes?.length) return;
+
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+
+      if (
+        event.shiftKey &&
+        (
+          document.activeElement === first ||
+          document.activeElement === contentRef.current
+        )
+      ) {
+        event.preventDefault();
+        last.focus();
+      } else if (
+        !event.shiftKey &&
+        document.activeElement === last
+      ) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+
+      document.removeEventListener(
+        "keydown",
+        handleKeyDown
+      );
+
+      if (previousFocus?.isConnected) {
+        previousFocus.focus?.();
+      }
+    };
+  }, [isPopupShown, onClosed]);
+
+  const handleTodayClose = () => {
+    const expires = new Date();
+
+    // 오늘 자정까지 숨깁니다.
+    expires.setHours(24, 0, 0, 0);
+
+    setCookie(cookieName, true, {
+      path: "/",
+      expires,
+      sameSite: "lax",
+    });
+
+    onClosed(false);
+  };
+
+  const handleClose = () => {
+    onClosed(false);
+  };
 
   const handleReservationClick = () => {
     onClosed(false);
     openInterestPopup();
   };
 
-  return (
+  if (
+    isPopupShown ||
+    typeof document === "undefined"
+  ) {
+    return null;
+  }
+
+  return createPortal(
     <div className={styles.backgroundContainer}>
-      <div className={styles.contentContainer}>
-        <div className={styles.popupImageBox}>
+      <section
+        className={styles.contentContainer}
+        ref={contentRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="중앙공원 롯데캐슬 특별혜택 안내"
+        tabIndex={-1}
+      >
+        <div className={styles.popupHeader}>
+          <span className={styles.headerTitle}>
+            특별혜택 안내
+          </span>
+
+          <button
+            type="button"
+            className={styles.topCloseBtn}
+            onClick={handleClose}
+            aria-label="특별혜택 팝업 닫기"
+          >
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+
+        <div
+          className={styles.popupImageBox}
+          tabIndex={0}
+          aria-label="혜택 안내 이미지. 위아래로 스크롤하여 전체 내용을 확인하세요."
+        >
           <img
             className={styles.popupImg}
             src={popupImage}
-            alt={`popup-image-${numbering}`}
+            alt="중앙공원 롯데캐슬 조건변경 특별혜택. 적용 대상별 발코니 지원, 계약축하금, 입주지원금, 옵션 및 10년 임대 혜택과 필수 납부 조건 안내."
           />
+        </div>
 
+        <div className={styles.actionContainer}>
           <button
             type="button"
             className={styles.visitReservationBtn}
             onClick={handleReservationClick}
-            aria-label="방문예약 팝업 열기"
-          />
-        </div>
-
-        <div className={styles.btnContainer}>
-          <div
-            className={styles.todayNotOpenBtn}
-            onClick={() => setType(1)}
           >
-            오늘 하루 보지 않기
-          </div>
+            <span className={styles.reservationText}>
+              <span className={styles.reservationTitle}>
+                모델하우스 방문예약
+              </span>
 
-          <div
-            className={styles.closeBtn}
-            onClick={() => setType(2)}
-          >
-            닫기
+              <span className={styles.reservationDesc}>
+                변경된 혜택 자세히 상담받기
+              </span>
+            </span>
+
+            <span
+              className={styles.reservationArrow}
+              aria-hidden="true"
+            >
+              →
+            </span>
+          </button>
+
+          <div className={styles.btnContainer}>
+            <button
+              type="button"
+              className={styles.todayNotOpenBtn}
+              onClick={handleTodayClose}
+            >
+              오늘 하루 보지 않기
+            </button>
+
+            <button
+              type="button"
+              className={styles.closeBtn}
+              onClick={handleClose}
+            >
+              닫기
+              <span aria-hidden="true">×</span>
+            </button>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </div>,
+    document.body
   );
 };
 
